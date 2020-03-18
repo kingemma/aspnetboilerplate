@@ -113,7 +113,6 @@ namespace Abp.Web.Configuration
 
         protected virtual AbpUserLocalizationConfigDto GetUserLocalizationConfig()
         {
-            var languages = LanguageManager.GetLanguages().ToList();
             var currentCulture = CultureInfo.CurrentUICulture;
             var languages = LanguageManager.GetActiveLanguages();
 
@@ -121,10 +120,10 @@ namespace Abp.Web.Configuration
             {
                 CurrentCulture = new AbpUserCurrentCultureConfigDto
                 {
-                    Name = userLanguageName,
-                    DisplayName = userLanguageDisplayName
+                    Name = currentCulture.Name,
+                    DisplayName = currentCulture.DisplayName
                 },
-                Languages = languages
+                Languages = languages.ToList()
             };
 
             if (languages.Count > 0)
