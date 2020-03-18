@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Abp.DynamicEntityParameters;
+using Abp.Webhooks;
 
 namespace Abp.Zero.EntityFrameworkCore
 {
@@ -106,6 +108,11 @@ namespace Abp.Zero.EntityFrameworkCore
         public virtual DbSet<UserOrganizationUnit> UserOrganizationUnits { get; set; }
 
         /// <summary>
+        /// OrganizationUnitRoles.
+        /// </summary>
+        public virtual DbSet<OrganizationUnitRole> OrganizationUnitRoles { get; set; }
+
+        /// <summary>
         /// Tenant notifications.
         /// </summary>
         public virtual DbSet<TenantNotificationInfo> TenantNotifications { get; set; }
@@ -134,6 +141,41 @@ namespace Abp.Zero.EntityFrameworkCore
         /// Entity property changes.
         /// </summary>
         public virtual DbSet<EntityPropertyChange> EntityPropertyChanges { get; set; }
+
+        /// <summary>
+        /// Webhook information
+        /// </summary>
+        public virtual DbSet<WebhookEvent> WebhookEvents { get; set; }
+
+        /// <summary>
+        /// Web subscriptions
+        /// </summary>
+        public virtual DbSet<WebhookSubscriptionInfo> WebhookSubscriptions { get; set; }
+
+        /// <summary>
+        /// Webhook work items
+        /// </summary>
+        public virtual DbSet<WebhookSendAttempt> WebhookSendAttempts { get; set; }
+
+        /// <summary>
+        /// DynamicParameters
+        /// </summary>
+        public virtual DbSet<DynamicParameter> DynamicParameters { get; set; }
+
+        /// <summary>
+        /// DynamicParameter selectable values
+        /// </summary>
+        public virtual DbSet<DynamicParameterValue> DynamicParameterValues { get; set; }
+
+        /// <summary>
+        /// Entities dynamic parameters. Which parameters that entity has
+        /// </summary>
+        public virtual DbSet<EntityDynamicParameter> EntityDynamicParameters { get; set; }
+
+        /// <summary>
+        /// Entities dynamic parameter's values
+        /// </summary>
+        public virtual DbSet<EntityDynamicParameterValue> EntityDynamicParameterValues { get; set; }
 
         public IEntityHistoryHelper EntityHistoryHelper { get; set; }
 
@@ -253,7 +295,7 @@ namespace Abp.Zero.EntityFrameworkCore
 
             modelBuilder.Entity<OrganizationUnit>(b =>
             {
-                b.HasIndex(e => new { e.TenantId, e.Code });
+                b.HasIndex(e => new { e.TenantId, e.Code }).IsUnique();
             });
 
             modelBuilder.Entity<PermissionSetting>(b =>
@@ -274,7 +316,7 @@ namespace Abp.Zero.EntityFrameworkCore
 
             modelBuilder.Entity<Setting>(b =>
             {
-                b.HasIndex(e => new { e.TenantId, e.Name });
+                b.HasIndex(e => new { e.TenantId, e.Name, e.UserId }).IsUnique().HasFilter(null);
             });
 
             modelBuilder.Entity<TenantNotificationInfo>(b =>
@@ -310,6 +352,12 @@ namespace Abp.Zero.EntityFrameworkCore
                 b.HasIndex(e => new { e.TenantId, e.OrganizationUnitId });
             });
 
+            modelBuilder.Entity<OrganizationUnitRole>(b =>
+            {
+                b.HasIndex(e => new { e.TenantId, e.RoleId });
+                b.HasIndex(e => new { e.TenantId, e.OrganizationUnitId });
+            });
+
             modelBuilder.Entity<UserRole>(b =>
             {
                 b.HasIndex(e => new { e.TenantId, e.UserId });
@@ -325,6 +373,16 @@ namespace Abp.Zero.EntityFrameworkCore
             modelBuilder.Entity<UserToken>(b =>
             {
                 b.HasIndex(e => new { e.TenantId, e.UserId });
+            });
+
+            modelBuilder.Entity<DynamicParameter>(b =>
+            {
+                b.HasIndex(e => new { e.ParameterName, e.TenantId }).IsUnique();
+            });
+
+            modelBuilder.Entity<EntityDynamicParameter>(b =>
+            {
+                b.HasIndex(e => new { e.EntityFullName, e.DynamicParameterId, e.TenantId }).IsUnique();
             });
         }
     }
